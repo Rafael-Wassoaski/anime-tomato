@@ -1,9 +1,12 @@
 package org.wassoaski.animeTomato.service;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.wassoaski.animeTomato.App;
 import org.wassoaski.animeTomato.model.Anime;
@@ -14,8 +17,8 @@ import org.wassoaski.animeTomato.repository.CriticRepository;
 import org.wassoaski.animeTomato.repository.UserRepository;
 
 @SpringBootTest(classes = App.class)
-@ActiveProfiles("test")
 @WebAppConfiguration
+@RunWith(SpringRunner.class)
 public class AnimeServiceTest {
 
     @Autowired
@@ -45,17 +48,17 @@ public class AnimeServiceTest {
 
     @Test
     public void shouldCalculateAnimeScore(){
-        System.out.println(animeRepository);
-        System.out.println(criticRepository);
-        System.out.println(userRepository);
-
         Anime anime = this.createAnime("One Piece");
         User user = this.createUser("Rafael");
         this.createCritic(anime, user);
         this.createCritic(anime, user);
         this.createCritic(anime, user);
+        anime.giveScore(5);
+        anime.giveScore(4);
+        anime.giveScore(3);
 
         float score = animeService.calculateScore(anime);
+        Assert.assertEquals(4, score, 0.0f);
 
     }
 }
