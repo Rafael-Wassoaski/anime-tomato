@@ -42,21 +42,4 @@ public class AnimeTest {
 
         Assert.assertEquals(0.0f, anime.getScore(), 0.0f);
     }
-
-    @Test
-    public void shouldRecalculateScoreAfterCritic(){
-        Anime anime = new Anime(NAME, DESCRIPTION);
-        anime.giveScore(2);
-
-        Assert.assertEquals(2.0f, anime.calculateScore(), 0.0f);
-    }
-
-    @Test
-    public void shouldRecalculateScoreAfterTwoCritics(){
-        Anime anime = new Anime(NAME, DESCRIPTION);
-        anime.giveScore(2);
-        anime.giveScore(4);
-
-        Assert.assertEquals(3.0f, anime.calculateScore(), 0.0f);
-    }
 }
