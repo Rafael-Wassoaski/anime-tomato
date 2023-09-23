@@ -9,7 +9,7 @@ public class Anime {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column
+    @Column(unique = true)
     private String name;
     @Column
     private String description;
@@ -17,6 +17,8 @@ public class Anime {
     private float score;
     @Column
     private int numberOfFans;
+
+    public Anime() {}
 
     public Anime(String name, String description) {
         this.name = name;
@@ -49,6 +51,10 @@ public class Anime {
         return score;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public void addFan() {
         this.numberOfFans += 1;
     }
@@ -56,8 +62,4 @@ public class Anime {
     public void giveScore(float score){
         this.score += score;
     }
-
-//    public float calculateScore() {
-//        return score / this.critcs;
-//    }
 }
