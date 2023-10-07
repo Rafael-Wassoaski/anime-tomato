@@ -1,7 +1,7 @@
 package org.wassoaski.animeTomato.service;
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
@@ -18,10 +18,11 @@ import org.wassoaski.animeTomato.model.User;
 import org.wassoaski.animeTomato.repository.AnimeRepository;
 import org.wassoaski.animeTomato.repository.CriticRepository;
 import org.wassoaski.animeTomato.repository.UserRepository;
+import org.wassoaski.animeTomato.service.validation.anime.ExistenceValidation;
+
+import java.util.Optional;
 
 @SpringBootTest(classes = App.class)
-@WebAppConfiguration
-@RunWith(SpringRunner.class)
 public class AnimeServiceTest {
 
     @Autowired
@@ -54,10 +55,9 @@ public class AnimeServiceTest {
 
     @AfterEach
     public void setup(){
-        this.animeRepository.deleteAll();
-        this.userRepository.deleteAll();
         this.criticRepository.deleteAll();
-        System.out.println("DELETADOS");
+        this.userRepository.deleteAll();
+        this.animeRepository.deleteAll();
     }
 
     @Test
@@ -99,7 +99,7 @@ public class AnimeServiceTest {
     }
 
     @Test
-    public void shouldCreateAnimeWithNameAndDescription() throws InvalidModel {
+    public void shouldCreateAnimeWithNameAndDescription() throws Exception {
         Anime dtoAnime = new Anime(ANIME_NAME, ANIME_DESCRIPTION);
 
         Anime anime = animeService.createAnime(dtoAnime);
@@ -112,17 +112,62 @@ public class AnimeServiceTest {
     @Test
     public void shouldThrowExceptionWhenCreatingAnimeWithNameThatAlreadyExists() throws InvalidModel {
         Anime baseAnime = this.createAnime("One Piece");
-
         Anime dtoAnime = new Anime(baseAnime.getName(), baseAnime.getDescription());
+
+        Assert.assertThrows(InvalidModel.class, ()->
+                animeService.createAnime(dtoAnime));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenCreatingAnimeWithId() throws InvalidModel {
+        Anime dtoAnime = new Anime(1L, ANIME_NAME, ANIME_DESCRIPTION);
 
         Assert.assertThrows(InvalidModel.class, ()->animeService.createAnime(dtoAnime));
     }
 
     @Test
-    public void shouldThrowExceptionWhenCreatingAnimeWithId() throws InvalidModel {
+    public void shouldUpateAnimeName() throws Exception {
+        String updatedName = "Death note";
+        Anime baseAnime = this.createAnime("One Piece");
+        Anime dtoAnime = new Anime(baseAnime.getId(), baseAnime.getName(), baseAnime.getDescription());
+        dtoAnime.setName(updatedName);
 
-        Anime dtoAnime = new Anime(1L, ANIME_NAME, ANIME_DESCRIPTION);
+        animeService.updateAnime(dtoAnime);
 
-        Assert.assertThrows(InvalidModel.class, ()->animeService.createAnime(dtoAnime));
+        Optional<Anime> optionalUpdatedAnime = this.animeRepository.findByName(updatedName);
+        Assert.assertNotNull(optionalUpdatedAnime);
+        Assert.assertTrue(optionalUpdatedAnime.isPresent());
+        Anime updatedAnime = optionalUpdatedAnime.get();
+        Assert.assertEquals(updatedName, updatedAnime.getName());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenTryingToUpdateAnimeWithoutId() throws Exception {
+        String updatedName = "Death note";
+        Anime baseAnime = this.createAnime("One Piece");
+        Anime dtoAnime = new Anime(baseAnime.getName(), baseAnime.getDescription());
+        dtoAnime.setName(updatedName);
+
+        Assert.assertThrows(InvalidModel.class, ()-> animeService.updateAnime(dtoAnime));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenTryingToUpdateAnimeWithNotExistentId() throws Exception {
+        String updatedName = "Death note";
+        Anime baseAnime = this.createAnime("One Piece");
+        Anime dtoAnime = new Anime(45L, baseAnime.getName(), baseAnime.getDescription());
+        dtoAnime.setName(updatedName);
+
+        Assert.assertThrows(ModelNotFoundException.class, ()-> animeService.updateAnime(dtoAnime));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenTryingToUpdateAnimeWithExistentName() throws Exception {
+        String updatedName = "One Piece";
+        Anime baseAnime = this.createAnime("One Piece");
+        Anime dtoAnime = new Anime(baseAnime.getName(), baseAnime.getDescription());
+        dtoAnime.setName(updatedName);
+
+        Assert.assertThrows(InvalidModel.class, ()-> animeService.updateAnime(dtoAnime));
     }
 }

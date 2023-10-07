@@ -9,28 +9,28 @@ import org.wassoaski.animeTomato.service.validation.ModelValidationChain;
 
 import java.util.Optional;
 
-public class NameValidation extends ModelValidationChain<Anime> {
+public class ExistenceValidation extends ModelValidationChain<Anime> {
 
     private AnimeRepository animeRepository;
 
-    public NameValidation(AnimeRepository animeRepository) {
+    public ExistenceValidation(AnimeRepository animeRepository) {
         this.animeRepository = animeRepository;
     }
 
     @Override
-    protected void isValid(Anime model) throws InvalidModel {
-        String name = model.getName();
-        if (name == null || name.isEmpty()) {
-            throw new InvalidModel("O nome do modelo não pode ser vazio");
+    protected void isValid(Anime model) throws InvalidModel, ModelNotFoundException {
+        Long id = model.getId();
+        if (id == null) {
+            throw new InvalidModel("O id do modelo não pode ser vazio");
         }
 
-        if(this.isNameInUse(name)){
-            throw new InvalidModel("Nome já em uso");
+        if(!this.idExists(id)){
+            throw new ModelNotFoundException(Anime.class.getName(), id);
         }
     }
 
-    private boolean isNameInUse(String name){
-        Optional<Anime> anime = this.animeRepository.findByName(name);
+    private boolean idExists(Long id){
+        Optional<Anime> anime = this.animeRepository.findById(id);
 
         return anime.isPresent();
     }

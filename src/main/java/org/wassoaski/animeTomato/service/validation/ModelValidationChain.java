@@ -3,21 +3,17 @@ package org.wassoaski.animeTomato.service.validation;
 public abstract class ModelValidationChain<M> {
 
     private ModelValidationChain nextValidation;
-    public boolean validate(M model){
-        if(!this.isValid(model)){
-            return false;
-        }
+    public void validate(M model) throws Exception{
+        this.isValid(model);
 
-        if(nextValidation == null){
-            return true;
+        if(nextValidation != null){
+            nextValidation.validate(model);
         }
-
-        return nextValidation.validate(model);
     }
 
-    protected abstract boolean isValid(M model);
+    protected abstract void isValid(M model) throws Exception;
 
-    public void setNextValidation(ModelValidationChain nextValidation) {
+    public void setNextValidation(ModelValidationChain nextValidation){
         this.nextValidation = nextValidation;
     }
 }

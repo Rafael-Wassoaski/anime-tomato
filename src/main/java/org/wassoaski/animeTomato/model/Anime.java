@@ -62,4 +62,12 @@ public class Anime {
     public void giveScore(float score){
         this.score += score;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

@@ -7,9 +7,13 @@ import org.wassoaski.animeTomato.exception.ModelNotFoundException;
 import org.wassoaski.animeTomato.model.Anime;
 import org.wassoaski.animeTomato.repository.AnimeRepository;
 import org.wassoaski.animeTomato.repository.CriticRepository;
+import org.wassoaski.animeTomato.service.validation.ModelValidationChain;
+import org.wassoaski.animeTomato.service.validation.anime.ExistenceValidation;
 import org.wassoaski.animeTomato.service.validation.anime.IdValidation;
 import org.wassoaski.animeTomato.service.validation.anime.NameValidation;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,6 +24,41 @@ public class AnimeService {
 
     @Autowired
     private AnimeRepository animeRepository;
+
+
+    public Anime createAnime(Anime dtoAnime) throws Exception {
+        List<ModelValidationChain> validations = Arrays.asList(
+                new NameValidation(this.animeRepository),
+                new IdValidation()
+        );
+
+        isAnimeValid(dtoAnime, validations);
+
+        return animeRepository.save(dtoAnime);
+    }
+
+    private void isAnimeValid(Anime anime, List<ModelValidationChain> validationChain) throws Exception{
+        ModelValidationChain modelValidationChain = validationChain.get(0);
+
+        for(int index = 1; index < validationChain.size(); index++){
+            ModelValidationChain modelValidationNextChain = validationChain.get(index);
+            modelValidationChain.setNextValidation(modelValidationNextChain);
+            modelValidationChain = modelValidationNextChain;
+        }
+
+        modelValidationChain = validationChain.get(0);
+        modelValidationChain.validate(anime);
+    }
+
+    public Anime updateAnime(Anime dtoAnime) throws Exception {
+        List<ModelValidationChain> validations = Arrays.asList(
+                new NameValidation(this.animeRepository),
+                new ExistenceValidation(this.animeRepository)
+        );
+
+        isAnimeValid(dtoAnime, validations);
+        return animeRepository.save(dtoAnime);
+    }
 
     public Anime getAnimeById(Long id) throws ModelNotFoundException {
         Optional<Anime> animeOptional = animeRepository.findById(id);
@@ -41,24 +80,5 @@ public class AnimeService {
         float score = anime.getScore();
 
         return score / numberOfCritics;
-    }
-
-    public Anime createAnime(Anime dtoAnime) throws InvalidModel {
-        if(!isAnimeValid(dtoAnime)){
-            throw new InvalidModel(Anime.class.getName());
-        }
-
-        return animeRepository.save(dtoAnime);
-    }
-
-
-    private boolean isAnimeValid(Anime anime){
-        NameValidation animeNameValidation = new NameValidation(this.animeRepository);
-        IdValidation animeIdValidation = new IdValidation();
-
-        animeNameValidation.setNextValidation(animeIdValidation);
-
-        return animeNameValidation.validate(anime);
-
     }
 }

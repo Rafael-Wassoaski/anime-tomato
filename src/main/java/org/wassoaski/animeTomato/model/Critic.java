@@ -30,6 +30,8 @@ public class Critic {
         this.anime = anime;
     }
 
+    public Critic() {}
+
     public String getCritic() {
         return critic;
     }
